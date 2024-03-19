@@ -168,7 +168,7 @@ def test_server_sigint_client_atomicity(server_instance, port):
     sock.sendall(len(msg).to_bytes(UINT_SIZE, byteorder="big", signed=False))
     sock.sendall(msg[: 9 * 2**10])
     server_instance.send_signal(subprocess.signal.SIGINT)
-    time.sleep(0.2)
+    time.sleep(0.5)
     assert server_instance.poll() is None, "server terminated unexpectedly"
     sock.sendall(msg[9 * 2**10 :])
     with pytest.raises(ConnectionError):
