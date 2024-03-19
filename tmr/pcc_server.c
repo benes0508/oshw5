@@ -11,10 +11,22 @@
 #define PRINTABLE_CHAR_MAX 126
 
 unsigned short pcc_total[PRINTABLE_CHAR_MAX - PRINTABLE_CHAR_MIN + 1] = {0};
+volatile sig_atomic_t processing_client = 0;
 volatile sig_atomic_t sigint_received = 0;
 
 void handle_sigint(int sig_num) {
-    sigint_received = 1;
+    if (processing_client == 0) {
+        // If not processing a client, print statistics and exit.
+        for (int i = PRINTABLE_CHAR_MIN; i <= PRINTABLE_CHAR_MAX; i++) {
+            if (pcc_total[i - PRINTABLE_CHAR_MIN] > 0) {
+                printf("char '%c' : %hu times\n", i, pcc_total[i - PRINTABLE_CHAR_MIN]);
+            }
+        }
+        exit(0);
+    } else {
+        // If processing a client, set flag to handle SIGINT after processing is done.
+        sigint_received = 1;
+    }
 }
 
 void print_statistics() {
