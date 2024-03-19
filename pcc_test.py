@@ -16,6 +16,7 @@ UINT_SIZE = 2
 
 
 def build_c_file(file_name: str, binary_name: str):
+    print('build C file\n')
     subprocess.run(
         f"gcc -O3 -D_POSIX_C_SOURCE=200809 -Wall -std=c11 {file_name} -o {binary_name}".split(
             " "
@@ -45,7 +46,6 @@ def run_client(client_binary: str, ip: str, port: int, file_path: str):
 @pytest.fixture(scope="module", autouse=True)
 def server():
     build_c_file("pcc_server.c", "server")
-    print('built server')
     yield "server"
     os.remove("server")
 
