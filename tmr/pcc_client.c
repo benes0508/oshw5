@@ -74,15 +74,20 @@ int main(int argc, char const *argv[]) {
     // Send file content to server
     char buffer[1024];
     ssize_t bytes_read, bytes_sent;
+    ssize_t bytes_written_total = 0, bytes_written = 0;
     while ((bytes_read = read(file_fd, buffer, sizeof(buffer))) > 0) {
-        bytes_sent = write(sock, buffer, bytes_read);
-        if (bytes_sent < 0) {
+    bytes_written_total = 0;
+    while (bytes_written_total < bytes_read) {
+        bytes_written = write(sock, buffer + bytes_written_total, bytes_read - bytes_written_total);
+        if (bytes_written < 0) {
             perror("Error sending file content");
             close(file_fd);
             close(sock);
             return 1;
         }
+        bytes_written_total += bytes_written;
     }
+}
     if (bytes_read < 0) {
         perror("Error reading file");
         close(file_fd);
