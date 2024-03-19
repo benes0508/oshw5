@@ -35,11 +35,9 @@ int main(int argc, char *argv[]) {
     int sockfd, newsockfd, portno;
     struct sockaddr_in serv_addr, cli_addr;
     socklen_t clilen;
-    char buffer[256];
     ssize_t n;
     unsigned short local_pcc[MAX_PRINTABLE - MIN_PRINTABLE] = {0};
 
-    // Set up signal handler
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = handle_sigint;
@@ -89,7 +87,7 @@ int main(int argc, char *argv[]) {
 
         memset(local_pcc, 0, sizeof(local_pcc));
         unsigned short count = 0;
-        while ((n = read(newsockfd, buffer, sizeof(buffer) - 1)) > 0) {
+        while ((n = read(newsockfd, buffer, sizeof(buffer))) > 0) {
             for (int i = 0; i < n; i++) {
                 if (buffer[i] >= MIN_PRINTABLE && buffer[i] < MAX_PRINTABLE) {
                     count++;
@@ -99,15 +97,12 @@ int main(int argc, char *argv[]) {
         }
 
         if (n < 0) {
-            if (errno != ETIMEDOUT && errno != ECONNRESET && errno != EPIPE) {
-                perror("ERROR on read");
-            }
+            perror("ERROR on read");
         } else {
-            // Send the count back to the client.
+            count = htons(count); // Ensure network byte order.
             if (write(newsockfd, &count, sizeof(count)) < 0) {
                 perror("ERROR on write");
             } else {
-                // Update global statistics only on successful interaction.
                 for (int i = 0; i < MAX_PRINTABLE - MIN_PRINTABLE; i++) {
                     pcc_total[i] += local_pcc[i];
                 }
@@ -122,5 +117,5 @@ int main(int argc, char *argv[]) {
 
     close(sockfd);
     print_statistics();
-    exit(0);
+    return 0;
 }
