@@ -7,7 +7,6 @@
 #include <netinet/in.h>
 #include <errno.h>
 
-#define PORT 12345 // This should be replaced with argv[1]
 #define PRINTABLE_CHAR_MIN 32
 #define PRINTABLE_CHAR_MAX 126
 
