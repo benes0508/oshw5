@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    printf("Server is listening on port %d...\n", port);
+   
 
     while (1) {
         if (sigint_received) break;
