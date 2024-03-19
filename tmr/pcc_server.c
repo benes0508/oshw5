@@ -15,26 +15,25 @@ volatile sig_atomic_t processing_client = 0;
 volatile sig_atomic_t sigint_received = 0;
 
 void handle_sigint(int sig_num) {
+    sigint_received = 1;
     if (processing_client == 0) {
-        // If not processing a client, print statistics and exit.
+        // Directly print statistics and exit if not processing a client.
         for (int i = PRINTABLE_CHAR_MIN; i <= PRINTABLE_CHAR_MAX; i++) {
             if (pcc_total[i - PRINTABLE_CHAR_MIN] > 0) {
                 printf("char '%c' : %hu times\n", i, pcc_total[i - PRINTABLE_CHAR_MIN]);
             }
         }
         exit(0);
-    } else {
-        // If processing a client, set flag to handle SIGINT after processing is done.
-        sigint_received = 1;
     }
+    // Otherwise, flag is set and will be checked after current client is processed.
 }
 
-void print_statistics() {
-    for (int i = PRINTABLE_CHAR_MIN; i <= PRINTABLE_CHAR_MAX; i++) {
-        if (pcc_total[i - PRINTABLE_CHAR_MIN] > 0) {
-            printf("char '%c' : %hu times\n", i, pcc_total[i - PRINTABLE_CHAR_MIN]);
-        }
-    }
+void setup_signal_handler() {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = handle_sigint;
+    sa.sa_flags = SA_RESTART; // Removing SA_RESTART to ensure accept() is interrupted
+    sigaction(SIGINT, &sa, NULL);
 }
 
 int main(int argc, char *argv[]) {
@@ -43,10 +42,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = &handle_sigint;
-    sigaction(SIGINT, &sa, NULL);
+    setup_signal_handler();
 
     int server_fd, new_socket;
     struct sockaddr_in address;
@@ -89,6 +85,8 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
+        processing_client = 1;
+
         uint16_t n_bytes = 0, c_bytes = 0;
         ssize_t bytes_read = read(new_socket, &n_bytes, sizeof(n_bytes));
         if (bytes_read <= 0) {
@@ -126,9 +124,18 @@ int main(int argc, char *argv[]) {
         c_bytes = htons(c_bytes);
         write(new_socket, &c_bytes, sizeof(c_bytes));
         close(new_socket);
+
+        processing_client = 0;
+        if (sigint_received) {
+            break;
+        }
     }
 
-    print_statistics();
+    for (int i = PRINTABLE_CHAR_MIN; i <= PRINTABLE_CHAR_MAX; i++) {
+        if (pcc_total[i - PRINTABLE_CHAR_MIN] > 0) {
+            printf("char '%c' : %hu times\n", i, pcc_total[i - PRINTABLE_CHAR_MIN]);
+        }
+    }
     close(server_fd);
     return 0;
 }
