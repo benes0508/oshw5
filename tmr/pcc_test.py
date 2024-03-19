@@ -71,7 +71,7 @@ def validate_server_counts(server_output: str, file_content: bytes):
         if chr(char) in string.printable and char >= 32
     }
     expected_counts.update({char: 0 for char in counts if char not in expected_counts})
-    print(counts&'\n')
+    print(counts, '\n')
     assert counts == expected_counts, "server character counts mismatch"
 
 
