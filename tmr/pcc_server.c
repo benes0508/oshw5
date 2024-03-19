@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    printf("Server is listening on port %d...\n", port);
+    //printf("Server is listening on port %d...\n", port);
 
     while (1) {
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
