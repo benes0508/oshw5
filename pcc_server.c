@@ -12,6 +12,7 @@
 #define MAX_PRINTABLE 128
 #define MIN_PRINTABLE 32
 #define LISTEN_QUEUE_SIZE 10
+#define BUFFER_SIZE 256
 
 unsigned short pcc_total[MAX_PRINTABLE - MIN_PRINTABLE] = {0};
 volatile sig_atomic_t sigint_received = 0;
@@ -35,6 +36,8 @@ int main(int argc, char *argv[]) {
     int sockfd, newsockfd, portno;
     struct sockaddr_in serv_addr, cli_addr;
     socklen_t clilen;
+    char buffer[BUFFER_SIZE];  // Declare buffer
+
     ssize_t n;
     unsigned short local_pcc[MAX_PRINTABLE - MIN_PRINTABLE] = {0};
 
