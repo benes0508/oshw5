@@ -73,7 +73,7 @@ int main(int argc, char const *argv[]) {
 
     // Send file content to server
     char buffer[1024];
-    ssize_t bytes_read, bytes_sent;
+    ssize_t bytes_read;
     ssize_t bytes_written_total = 0, bytes_written = 0;
     while ((bytes_read = read(file_fd, buffer, sizeof(buffer))) > 0) {
     bytes_written_total = 0;
